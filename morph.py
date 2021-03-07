@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 import cv2
 import argparse
-
+import os
 
 TRAIN_EPOCHS = 1000
 
@@ -145,7 +145,9 @@ def use_warp_maps(origins, targets):
     img_a_b = np.zeros((im_sz, im_sz * (STEPS // 10), 3), dtype = np.uint8)
     
     res_img = np.zeros((im_sz * 3, im_sz * (STEPS // 10), 3), dtype = np.uint8)
-    
+
+    os.makedirs(os.path.join("morph", "frames"), exist_ok=True)
+
     for i in range(STEPS):
         preds_org = preds * org_strength[i]
         preds_trg = preds * trg_strength[i]
@@ -158,7 +160,9 @@ def use_warp_maps(origins, targets):
         res_numpy = results.numpy()
     
         img = ((res_numpy[i] + 1) * 127.5).astype(np.uint8)
-        video.write(cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        video.write(img_bgr)
+        cv2.imwrite(f"morph/frames/{str(i).zfill(4)}.jpg", img_bgr)
 
         if (i+1) % 10 == 0: 
             res_img[im_sz*0:im_sz*1, i // 10 * im_sz : (i // 10 + 1) * im_sz] = img
